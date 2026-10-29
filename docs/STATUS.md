@@ -4,7 +4,7 @@
 
 ## 현재 마일스톤
 
-**M1 로컬 구현·검증 완료, 원격 CI·Pages 배포 대기.** M1 전체 완료와 M2 시각 승인은 아직 아니다.
+**M1 로컬 및 원격 CI 검증 완료, PR #1 main 병합 완료. Pages 활성화 설정 대기.** M1 전체 완료와 M2 시각 승인은 아직 아니다.
 
 ## 완료된 기능
 
@@ -15,7 +15,7 @@
 - 상태·프레임·위치·게임 시간·HP·타격 횟수 표시. 0.25/0.5/1배, 정지와 다음 프레임 경계까지 전체 게임 시간 진행.
 - 발 원점·그립·별도 검 선분·전방 공격 범위 표시/숨김. 공격 중 방향 고정·다른 공격 무시·CC 중단 및 남은 타격 취소.
 - 걷기 Pointer Events 해제/취소/버튼 이탈/캡처 상실/포커스 상실/페이지 비표시 시 입력 해제. A/D·방향키·Space 지원.
-- CI와 main Pages 배포 워크플로 작성. **원격 실행 성공은 미확인.**
+- CI와 main Pages 배포 워크플로 작성. **원격 Validate 성공 확인. Pages는 저장소 설정 단계에서 실패.**
 
 ## 실행·검증 결과
 
@@ -32,7 +32,7 @@
 | 브라우저 기능 | 로딩, 자동 접근·타격, 정지/프레임 진행, 초기화, 걷기 취소 5종, 키보드, 수동 버튼, 배속 선택, 디버그 토글, 더미 제거 확인 |
 | 레이아웃 | 1280×720 PC와 Pixel 7 세로 에뮬레이션에서 가로 overflow 없음. 모바일 스크린샷 직접 확인 |
 | 모바일 실기기·가로 회전·앱 복귀·성능 | 미검증 |
-| 원격 GitHub CI / Pages 배포 / 공개 URL | 기능 브랜치 push 완료. API 네트워크 차단으로 실행 결과 조회·배포 미확인 |
+| 원격 GitHub CI / Pages 배포 / 공개 URL | 원격 Validate 성공, PR #1 main 병합 완료. Deploy Pages 빌드는 성공했으나 configure-pages에서 Pages 미활성화 관련 404로 실패 |
 | APK | 미착수 |
 
 단위 테스트는 공격당 1회 피해, 거리/방향/정확한 사거리 경계, CC 타격 취소·경직 갱신, 공격 입력 거부·방향 잠금, 정지/배속/프레임 진행 시간, 자동 접근, 넉백 이후 위치 유지·추가 넉다운 무시, 필드 경계·reset을 검증한다. 부동소수점 프레임 경계에서 진행이 정체되는 문제를 수정하고 재검증했다.
@@ -41,15 +41,16 @@
 
 ## 실행·확인 방법
 
-저장소 루트에서 `npm ci` → `npm run dev` 후 개발 서버의 `/?scene=character-lab`에 접속한다. `npm run build` → `npm run preview`로 빌드 결과 확인 가능. 공개 배포 주소는 아직 없다.
+저장소 루트에서 `npm ci` → `npm run dev` 후 개발 서버의 `/?scene=character-lab`에 접속한다. `npm run build` → `npm run preview`로 빌드 결과 확인 가능. Pages가 아직 활성화되지 않아 확인된 공개 배포 주소는 없다.
 
 더미 투입→자동 접근·공격 체크→HP 감소 확인. 일시정지 후 한 프레임 진행으로 상태·타격 시점 확인. 전체 초기화 후 걷기 버튼을 누르고 떼거나 버튼 밖으로 이동해 정지 확인. 경직/넉백은 공격을 중단한다. UI와 도형은 검사 도구이며 정식 게임이 아니다.
 
 ## 진행·차단·한계
 
-- 구현 커밋 `96e84c4`를 `feat/m1-character-lab` 브랜치로 GitHub에 push했다. main은 변경하지 않았다. PR 생성·원격 CI 조회·Pages 설정 API는 `api.github.com` CONNECT 요청이 네트워크 정책 403으로 차단되어 수행하지 못했다. 계정 권한 부족이나 CI 실패로 단정하지 않는다.
-- PR 생성: https://github.com/ckengus/little_caravan/pull/new/feat/m1-character-lab (base: main). PR 검사 통과 후 merge하고 Settings → Pages → Source: GitHub Actions를 설정한다. Actions의 Deploy Pages 성공 후 표시되는 실제 주소를 확인해야 한다.
-- 이 환경에서 자동 처리를 재개하려면 환경 네트워크 허용 목록에 `api.github.com`을 추가하고 변경을 적용해야 한다. 적용 후 기존 주입 인증으로 API를 다시 확인한다. 토큰이 필요하다고 아직 판단하지 않는다.
+- PR [#1](https://github.com/ckengus/little_caravan/pull/1)을 생성해 main에 병합했다. 병합 커밋: 8db6a5aec5d34b29a5ae751a533e6a7f3ac707c0. GitHub 연결 도구를 통해 처리했으며 별도 클라우드 Codex 환경의 네트워크 정책을 변경한 것은 아니다.
+- 브랜치 HEAD bdceeec의 [Validate](https://github.com/ckengus/little_caravan/actions/runs/40872358715)에서 설치·타입 검사·단위 테스트·빌드·브라우저 테스트 성공을 확인했다.
+- main의 [Deploy Pages](https://github.com/ckengus/little_caravan/actions/runs/40872851230)는 npm test와 build 성공 후 actions/configure-pages에서 실패했다. 로그는 Pages를 활성화하고 GitHub Actions 빌드로 설정하라는 안내와 404 Not Found다. 앱 코드 오류나 클라우드 네트워크 오류로 분류하지 않는다.
+- 사용자 설정 필요: 저장소 Settings → Pages → Build and deployment → Source: GitHub Actions. 그 뒤 Actions → Deploy Pages → Run workflow(main) 또는 실패 실행 재시도. 실제 배포 성공/주소 접속은 아직 확인하지 않았다.
 - 전체 M1 완료는 원격 CI·배포·접속 확인 후 판단한다.
 - Phaser 청크 약 1.21 MB / gzip 332 kB 크기 경고. 모바일 실기기 성능과 로딩 품질은 미검증.
 - 효과음 리소스와 재생 UI는 미구현, 오디오 비활성화.
@@ -65,3 +66,7 @@
 1. 변경 검토·원격 반영 후 CI와 Pages 설정/배포/실제 접속 확인. 성공한 URL만 기록.
 2. M2용 기본자세·베기 프레임·검/손 리소스 확보 후 manifest와 레이어 합성, 두 번째 검 교체 구현.
 3. 사용자 시각 검수 및 실제 휴대폰 터치·회전·복귀 검증.
+
+## 2026-10-29 원격 인계 기록
+
+GitHub 연결 도구로 CI 조회·PR 생성·병합과 배포 로그 확인을 수행했다. Pages 설정 변경 전이므로 테스트 URL을 확정해 제공하지 않았다. 현재 연결 도구에는 Pages 설정 변경 기능이 없어 사용자 계정에서 한 차례 설정이 필요하다.

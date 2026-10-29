@@ -44,8 +44,7 @@ npm run test:browser
 
 걷기 버튼을 누르고 있거나 A/D·방향키로 이동, Space로 베기. 더미 투입 후 자동 접근·공격을 켤 수 있다. 재생 패널에서 배속·일시정지·한 프레임 진행과 디버그 표시를 조절한다. 모든 도형과 동작은 임시이며 정식 아트가 아니다.
 
-CI는 설치→타입 검사→단위 테스트→빌드→브라우저 테스트를 실행한다. main 푸시 시 Pages 배포 워크플로가 실행된다. 저장소 Settings → Pages → Build and deployment → Source를 **GitHub Actions**로 설정해야 한다. 아직 원격 CI/배포를 실행하거나 공개 URL을 확인하지 않았으며, 변경은 `feat/m1-character-lab` 브랜치에 게시했다. PR 생성·CI 결과 조회는 클라우드의 GitHub API 네트워크 차단으로 진행하지 못했다. [PR 생성](https://github.com/ckengus/little_caravan/pull/new/feat/m1-character-lab)에서 base main으로 PR을 만들 수 있다.
+CI는 설치→타입 검사→단위 테스트→빌드→브라우저 테스트를 실행한다. 기능 브랜치의 원격 Validate 성공을 확인했고 [PR #1](https://github.com/ckengus/little_caravan/pull/1)을 main에 병합했다. main의 Pages 배포는 빌드 성공 후 Pages 미활성화 관련 configure-pages 404로 실패했다.
 
-## 문서 사용 원칙
+저장소 [Settings → Pages](https://github.com/ckengus/little_caravan/settings/pages)에서 Build and deployment → Source를 **GitHub Actions**로 설정한다. 이후 Actions → Deploy Pages → Run workflow(main) 또는 실패 실행 재시도. 배포 성공과 실제 접속 확인 전까지 공개 테스트 URL은 미확정이다.
 
-GitHub의 현재 문서를 GPT와 Codex의 공통 기준으로 사용한다. 과거 채팅의 맥락이 자동 전달된다고 가정하지 않는다. 실제 구현·검증 결과는 STATUS에 기록하고, 새 사용자 결정은 관련 명세와 DECISIONS에 반영한다.
