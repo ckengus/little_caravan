@@ -94,3 +94,7 @@ M6 전에는 APK를 우선하지 않는다. 도입 시 실제 Node·Capacitor·J
 - 오디오는 리소스가 없어 비활성화했다. 음소거/사용자 제스처 활성화는 오디오 추가 시 구현한다.
 - Phaser 번들이 약 1.21 MB (gzip 332 kB)로 Vite 크기 경고가 있다. 빌드는 성공하며 모바일 실기기 성능은 별도 검증 대상이다.
 - 브라우저 다운로드 `cdn.playwright.dev`는 현재 네트워크 정책에서 403으로 차단되어 기존 시스템 Chromium을 사용했다. CI는 Playwright Chromium을 설치하도록 구성했으며 원격 실행은 미검증이다.
+
+## M2 간결 연출 구현
+
+actorView는 Lab 상태/elapsed만으로 표현을 샘플링한다. action의 hit×FRAME과 타격 시작을 공유하고 hero.ts에서 impact 유지 0.1초·offset·회전·포즈를 관리한다. Lab의 실제 위치와 visualOffset을 분리하고 공격별 렌더러 타이머를 두지 않는다. Vite assetsInlineLimit=0은 Phaser SVG 로더와의 데이터 URI 비호환을 피하며 Pages 상대 경로는 유지한다. 자세 규격과 PNG 교체 절차는 [리소스 계약](../src/game/assets/README.md)을 따른다. 이번 로컬 회귀: 단위 13/브라우저 8 통과, 원격 M2 결과 미확인.

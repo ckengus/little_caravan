@@ -4,68 +4,59 @@
 
 ## 현재 마일스톤
 
-**M1 로컬·원격 CI 검증과 Pages 배포 성공. 배포 후 사용자 접속·조작 확인 대기.** M2는 간결한 전투 연출로 전환했으며 실제 휴대폰 검수는 별도다.
+**M2 간결 연출 파이프라인 로컬 구현·검증 완료. 승인 PNG·사용자 시각 승인·M2 원격 배포 대기.** 최신 main `ecc8f9d806eec34071d69e7734e6f4368a455a74`에서 시작했다. M1은 기존 CI·Pages 성공 이력이 있으며 아래 M2 검증과 구분한다.
 
 ## 완료된 기능
 
-- Node 24.19.0 + TypeScript/Vite/Phaser 프로젝트, package-lock.json, 설치·개발·빌드·미리보기 명령.
-- `?scene=character-lab` 테스트 필드: 평지·발 기준선·임시 주인공·더미·반응형 HTML 조작 패널.
-- 대기/걷기/베기/찌르기/대쉬/돌진 베기/경직/넉백→넘어짐→기상 상태와 임시 도형 표현. 정상 행동 후 동일 대기로 복귀하며 이동 후 좌표 유지.
-- 수동/자동 전환, 더미 투입·제거·전체 초기화, 자동 접근→범위 정지→공격. 더미 HP·피격 색·작은 밀려남.
-- 상태·프레임·위치·게임 시간·HP·타격 횟수 표시. 0.25/0.5/1배, 정지와 다음 프레임 경계까지 전체 게임 시간 진행.
-- 발 원점·그립·별도 검 선분·전방 공격 범위 표시/숨김. 공격 중 방향 고정·다른 공격 무시·CC 중단 및 남은 타격 취소.
-- 걷기 Pointer Events 해제/취소/버튼 이탈/캡처 상실/포커스 상실/페이지 비표시 시 입력 해제. A/D·방향키·Space 지원.
-- CI와 main Pages 배포 워크플로 작성. **원격 Validate 성공 확인. Pages는 저장소 설정 단계에서 실패.**
+- 기존 Lab의 행동/위치/피해/더미 로직은 변경하지 않았다. M1 걷기·찌르기·대쉬·CC·배속·정지·프레임 진행·입력 취소 기능을 보존했다.
+- `src/game/actorView.ts`: 렌더러와 독립된 게임 시간 기반 표현 샘플. idle/anticipation/impact/recover, 포즈/offset/rotation/검 궤적을 결정한다. 렌더러 타이머나 추가 피해 처리는 없다.
+- `src/data/hero.ts`: 두 이미지 경로, 공통 발 원점, 표시 크기, 시각 단계, 효과 및 장비 ID/외형 ID 구분 데이터.
+- 두 개의 직접 작성한 투명 임시 SVG: 대기와 무기/손 포함 공격 포즈. 전체 일러스트 흔들기 대신 실제 다른 두 포즈를 전환한다. 미승인 m2-v1 원본과 ZIP은 변경하지 않았다.
+- 베기 0.0~0.2s 준비(idle), 0.2~0.3s 타격(attack+전진 10px+궤적), 0.3~0.6s 복귀(같은 idle). 타격 시작은 기존 actions hit/frame과 공유하며 타격 유지시간은 데이터에 있다. 찌르기/돌진 베기도 각 기존 hit 시점을 사용하지만 전용 자세는 없는 임시 대체다.
+- 기존 더미 섬광·8px 실제 밀려남과 같은 피해 이벤트 시각에 광선을 표시한다. 모든 효과는 게임 시간으로 진행하고 정지 시 멈춘다.
+- 월드 좌표와 별도 visualOffset. 제자리 베기는 월드 좌표 불변, dash/knockback은 도착 좌표 유지. 종료/CC/reset 시 남은 공격 포즈·궤적·offset을 제거한다.
+- 좌우 반전과 효과 방향 반영. 디버그는 발 원점/공격 범위만 표시하며 존재하지 않는 무기 소켓을 표시하지 않는다.
 
-## 실행·검증 결과
+## 이번 검증 결과
 
-2026-10-29 클라우드 환경에서 실제 실행:
-
-| 검증 | 결과 |
+| 항목 | 결과 |
 | --- | --- |
-| `npm ci --no-audit --no-fund` | 성공, 잠금 파일 재설치 확인 |
-| `npm run typecheck` | 통과 |
-| `npm test` | Vitest 1파일, 9개 통과 |
-| `npm run build` | 성공, dist 생성. Phaser 청크 크기 경고 존재 |
-| `npm run test:browser` | Chromium desktop/Pixel 7 에뮬레이션 각 3개, 총 6개 통과 |
-| 브라우저 오류·404 | 스모크 중 콘솔 오류/pageerror/HTTP 400 이상 없음 |
-| 브라우저 기능 | 로딩, 자동 접근·타격, 정지/프레임 진행, 초기화, 걷기 취소 5종, 키보드, 수동 버튼, 배속 선택, 디버그 토글, 더미 제거 확인 |
-| 레이아웃 | 1280×720 PC와 Pixel 7 세로 에뮬레이션에서 가로 overflow 없음. 모바일 스크린샷 직접 확인 |
-| 모바일 실기기·가로 회전·앱 복귀·성능 | 미검증 |
-| 원격 GitHub CI / Pages 배포 / 공개 URL | 원격 Validate 성공, PR #1 main 병합 완료. Deploy Pages 빌드는 성공했으나 configure-pages에서 Pages 미활성화 관련 404로 실패 |
-| APK | 미착수 |
+| `npm run build` (typecheck 포함) | 성공, SVG 2개 별도 해시 파일 및 dist 생성 |
+| `npm test` | 2파일, 13개 통과 (기존 9 + 표현/피해 동기화·복원 4) |
+| `npm run test:browser` | desktop/Pixel 7 에뮬레이션 총 8개 통과 (기존 6 + M2 2) |
+| 브라우저 리소스·오류 | 스모크에서 pageerror/콘솔 오류/HTTP 400 이상 없음. 두 포즈 로딩·실제 전환 확인 |
+| 작은 화면/좌우 | 모바일 타격·반전 스크린샷 생성, 투명 배경·바닥·포즈·궤적 확인. 가로 overflow 없음 |
+| 일시정지/CC/reset | impact에서 포즈·궤적 정지, CC 시 제거, reset 복원, 좌측 offset -10 확인 |
+| 원격 M2 CI·PR·배포 | GitHub API 403 차단. 결과 미확인, main 미변경 |
+| 실제 휴대폰·사용자 시각 승인 | 미검증/대기 |
 
-단위 테스트는 공격당 1회 피해, 거리/방향/정확한 사거리 경계, CC 타격 취소·경직 갱신, 공격 입력 거부·방향 잠금, 정지/배속/프레임 진행 시간, 자동 접근, 넉백 이후 위치 유지·추가 넉다운 무시, 필드 경계·reset을 검증한다. 부동소수점 프레임 경계에서 진행이 정체되는 문제를 수정하고 재검증했다.
+초기 브라우저 실행에서 Phaser가 Vite 인라인 SVG data URI를 atob로 해독하다 실패했다. `assetsInlineLimit: 0`으로 별도 URL 로딩을 적용하고 전체 8개 테스트를 재실행해 통과했다. Phaser 청크 1.21MB/gzip 332KB 경고는 남아 있으며 빌드 실패는 아니다.
 
-브라우저 다운로드는 cdn.playwright.dev에서 정책 403으로 실패했으므로 이미 설치된 `/usr/bin/chromium`으로 검증했다. 브라우저 테스트는 시스템 Chromium이 없으면 Playwright 설치 브라우저를 선택한다. 스크린샷은 재생성 가능한 ignored `test-results/lab-desktop.png`, `lab-mobile.png`에 있다.
+검증 스크린샷: ignored `test-results/m2-impact-{desktop,mobile}.png`, `m2-impact-left-{desktop,mobile}.png`. 자동 통과는 시각 승인을 의미하지 않는다.
 
-## 실행·확인 방법
+## 실행·검수 방법
 
-저장소 루트에서 `npm ci` → `npm run dev` 후 개발 서버의 `/?scene=character-lab`에 접속한다. `npm run build` → `npm run preview`로 빌드 결과 확인 가능. 배포 성공 주소: https://ckengus.github.io/little_caravan/?scene=character-lab . 배포 후 실제 렌더링·조작은 사용자 확인 대기.
+`npm run dev` → `/?scene=character-lab`. 더미 투입→자동 접근·공격으로 포즈/궤적/피격 확인. 일시정지→베기→한 프레임 진행 2회로 impact 확인, 1회 추가로 같은 idle 복귀 확인. CC나 전체 초기화 후 궤적과 offset이 없어야 한다. 좌측을 향해 같은 동작을 반복한다.
 
-더미 투입→자동 접근·공격 체크→HP 감소 확인. 일시정지 후 한 프레임 진행으로 상태·타격 시점 확인. 전체 초기화 후 걷기 버튼을 누르고 떼거나 버튼 밖으로 이동해 정지 확인. 경직/넉백은 공격을 중단한다. UI와 도형은 검사 도구이며 정식 게임이 아니다.
+기존 M1 배포 주소: https://ckengus.github.io/little_caravan/?scene=character-lab . **이번 M2 변경이 배포된 주소로 확인한 것은 아니다.** M2 main 병합/Pages 성공 후 새 화면 확인이 필요하다.
 
-## 진행·차단·한계
+## 차단·누락 아트·제한
 
-- PR [#1](https://github.com/ckengus/little_caravan/pull/1)을 생성해 main에 병합했다. 병합 커밋: 8db6a5aec5d34b29a5ae751a533e6a7f3ac707c0. GitHub 연결 도구를 통해 처리했으며 별도 클라우드 Codex 환경의 네트워크 정책을 변경한 것은 아니다.
-- 브랜치 HEAD bdceeec의 [Validate](https://github.com/ckengus/little_caravan/actions/runs/40872358715)에서 설치·타입 검사·단위 테스트·빌드·브라우저 테스트 성공을 확인했다.
-- main의 [Deploy Pages](https://github.com/ckengus/little_caravan/actions/runs/40872851230)는 npm test와 build 성공 후 actions/configure-pages에서 실패했다. 로그는 Pages를 활성화하고 GitHub Actions 빌드로 설정하라는 안내와 404 Not Found다. 앱 코드 오류나 클라우드 네트워크 오류로 분류하지 않는다.
-- 사용자 설정 필요: 저장소 Settings → Pages → Build and deployment → Source: GitHub Actions. 그 뒤 Actions → Deploy Pages → Run workflow(main) 또는 실패 실행 재시도. 실제 배포 성공/주소 접속은 아직 확인하지 않았다.
-- 전체 M1 완료는 원격 CI·배포·접속 확인 후 판단한다.
-- Phaser 청크 약 1.21 MB / gzip 332 kB 크기 경고. 모바일 실기기 성능과 로딩 품질은 미검증.
-- 효과음 리소스와 재생 UI는 미구현, 오디오 비활성화.
-
-## 임시 아트·누락 리소스 / M2
-
-기존 일행 PNG를 직접 열어 외형 참고임을 확인했고 원본을 변경하지 않았다. 코드 도형의 검 각도 변화·이동·넘어짐 표시는 임시이며 정식 베기·찌르기·기상 애니메이션 완성이 아니다. M2 manifest와 리소스 교체 스키마도 아직 없다.
-
-필요 리소스: 발 원점이 같은 게임용 전투 기본자세, 베기 준비/타격/마무리/회수 몸 프레임, 투명한 별도 검 2종, 앞손/뒷손 패치, 각 프레임 손잡이 피벗·레이어·양손 부착 데이터. 최종 작은 화면 그립과 타격감은 사용자 검수 대기. 다른 3명과 의상 양산은 미착수.
+- 이 환경의 `gh api repos/ckengus/little_caravan` 재시도는 `https://api.github.com/...: Forbidden`. 이전 외부 연결 도구로 성공한 CI/Pages 이력과 별개이며 계정 권한 문제로 단정하지 않는다.
+- 승인된 idle/attack PNG 없음. 필요한 정확한 규격은 [임시 포즈·PNG 교체 계약](../src/game/assets/README.md): 256×256 RGBA, 발 (128,234), 오른쪽 기본 방향, 표시 높이 160px. 검/손 포함 완성 포즈 2장 필요.
+- 걷기/찌르기/대쉬/경직/넘어짐/기상 전용 아트는 미제작. idle 기울임·위치 이동 등 임시 대체이며 완료 아트가 아니다.
+- 그림 속 기본 검은 고정. 실제 무기 교체 외형/소켓/장비 시스템은 미구현이며 현재 M2 필수 조건도 아니다.
+- 오디오 리소스/재생은 미구현. 다른 3명·APK·실결제·서버는 범위 밖.
 
 ## 다음 작업
 
-1. [M2 간결 전투 작업지시](tasks/M2_SIMPLE_COMBAT.md)를 따라 테스트 필드에 idle/attack 두 자세와 이펙트 연출을 구현한다.
-2. 새 두 자세 아트를 준비하고 작은 화면에서 더미 타격을 확인한다. 현재 승인된 두 자세 소스는 아직 없다.
-3. 사용자 시각 검수 후 나머지 3명으로 확대한다. 실제 휴대폰 검수는 별도로 기록한다.
+1. M2 브랜치의 CI 확인·main 병합 후 Pages 재배포 및 실제 앱 접속 검증.
+2. 승인된 두 PNG 적용과 작은 화면의 포즈/타격감 사용자 검수.
+3. 사용자 승인 후 다른 일행 확대. 실제 휴대폰 터치·회전·복귀·성능은 별도 검증.
+
+## 이전 진행 이력 (당시 상태)
+
+아래 기록의 '미구현/다음'은 당시 이력이다. 현재 기준은 위 M2 간결 연출과 ANIMATION_PIPELINE v0.2이며 별도 무기/손 소켓 실험을 재개하지 않는다.
 
 ## 2026-10-29 원격 인계 기록
 
