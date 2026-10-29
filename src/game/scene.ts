@@ -1,10 +1,22 @@
 import Phaser from 'phaser';
 import { Lab } from '../domain/lab';
 import { RULES } from '../data/actions';
+import { hero } from '../data/hero';
+import { actorView } from './actorView';
 export class LabScene extends Phaser.Scene {
   private pen!: Phaser.GameObjects.Graphics;
+  private actor!: Phaser.GameObjects.Image;
+  private effects!: Phaser.GameObjects.Graphics;
   constructor(private lab: Lab, private notify: () => void, private debug: () => boolean) { super('character-lab'); }
-  create() { this.pen = this.add.graphics(); }
+  preload() {
+    this.load.svg('hero-idle', hero.images.idle);
+    this.load.svg('hero-attack', hero.images.attack);
+  }
+  create() {
+    this.pen = this.add.graphics();
+    this.actor = this.add.image(0, 0, 'hero-idle').setOrigin(hero.foot.x / hero.canvas.width, hero.foot.y / hero.canvas.height).setScale(hero.displayHeight / hero.canvas.height);
+    this.effects = this.add.graphics();
+  }
   update(_time: number, delta: number) {
     this.lab.tick(delta / 1000); this.draw(); this.notify();
   }
@@ -22,28 +34,38 @@ export class LabScene extends Phaser.Scene {
       g.fillStyle(0x122c2b); g.fillRect(d.x - 35, ground - 105, 70, 7);
       g.fillStyle(0xefb879); g.fillRect(d.x - 35, ground - 105, 70 * d.hp / RULES.dummyHp, 7);
     }
-    const f = m.facing, x = m.x;
-    const down = m.state === 'fallen' || m.state === 'knockback';
-    const y = ground - (down ? 22 : 64);
-    const stride = m.state === 'walk' ? Math.sin(m.elapsed * Math.PI * 5) * 10 : 0;
-    g.lineStyle(13, 0x332c2a); g.lineBetween(x - 10, y + 16, x - 15 + stride, ground - 5); g.lineBetween(x + 10, y + 16, x + 15 - stride, ground - 5);
-    g.fillStyle(0x9d704c); g.fillRoundedRect(x - 20, y - 23, 40, 50, 10);
-    g.fillStyle(0xf1c492); g.fillCircle(x, y - 43, 21);
-    g.fillStyle(0x5e3f2d); g.fillRoundedRect(x - 23, y - 66, 44, 19, 8);
-    g.fillStyle(0x54b4ad); g.fillTriangle(x - 23, y - 26, x + 20, y - 26, x - 34 * f, y - 6);
-    const attack = ['slash', 'dashSlash'].includes(m.state);
-    const angles = [-1.1, -1.9, 0.4, 0.9, 0.2, -1.1];
-    const angle = attack ? angles[m.frame] : m.state === 'thrust' ? 0 : -1.1;
-    const handX = x + f * (m.state === 'thrust' && m.frame === 2 ? 46 : 24), handY = y - 6;
-    const tipX = handX + f * Math.cos(angle) * 68, tipY = handY + Math.sin(angle) * 68;
-    g.lineStyle(10, 0x332c2a); g.lineBetween(x - f * 12, y - 9, handX, handY); g.lineBetween(x + f * 8, y - 17, handX + f * 7, handY - 3);
-    g.lineStyle(8, 0xd8e7e0); g.lineBetween(handX, handY, tipX, tipY);
-    g.lineStyle(5, 0xe0ae57); g.lineBetween(handX - 6, handY - 8, handX + 6, handY + 8);
-    g.fillStyle(0xf1c492); g.fillCircle(handX, handY, 5);
-    if (this.debug()) {
-      g.lineStyle(1, 0xf0c477, 0.8); g.strokeRect(f > 0 ? x : x - RULES.range, ground - 110, RULES.range, 110);
-      g.lineStyle(2, 0x76f3e0); g.lineBetween(x - 8, ground, x + 8, ground); g.lineBetween(x, ground - 8, x, ground + 8);
-      g.strokeCircle(handX, handY, 8); g.lineBetween(handX, handY, tipX, tipY);
+    const f = m.facing, x = m.x, view = actorView(m);
+    this.actor.setTexture(`hero-${view.image}`).setPosition(x + view.offsetX, ground).setFlipX(f < 0).setRotation(view.rotation);
+    const e = this.effects;
+    e.clear();
+    if (view.trail) {
+      e.lineStyle(7, hero.trail.color, 0.85);
+      e.beginPath();
+      for (let i = 0; i <= 16; i++) {
+        const angle = -1.1 + i / 16 * 2;
+        const px = x + view.offsetX + f * Math.cos(angle) * hero.trail.radius;
+        const py = ground - 68 + Math.sin(angle) * hero.trail.radius;
+        if (i === 0) e.moveTo(px, py); else e.lineTo(px, py);
+      }
+      e.strokePath();
     }
+    if (d && d.flash > 0) {
+      e.lineStyle(3, 0xffefbd, d.flash / 0.2);
+      for (let i = 0; i < 6; i++) {
+        const a = i * Math.PI / 3;
+        e.lineBetween(d.x + Math.cos(a) * 30, ground - 55 + Math.sin(a) * 30, d.x + Math.cos(a) * 43, ground - 55 + Math.sin(a) * 43);
+      }
+    }
+    if (this.debug()) {
+      e.lineStyle(1, 0xf0c477, 0.8); e.strokeRect(f > 0 ? x : x - RULES.range, ground - 110, RULES.range, 110);
+      e.lineStyle(2, 0x76f3e0); e.lineBetween(x - 8, ground, x + 8, ground); e.lineBetween(x, ground - 8, x, ground + 8);
+    }
+    const canvas = this.game.canvas;
+    canvas.dataset.phase = view.phase;
+    canvas.dataset.pose = view.image;
+    canvas.dataset.visualOffset = String(view.offsetX);
+    canvas.dataset.rotation = String(view.rotation);
+    canvas.dataset.facing = String(view.facing);
+    canvas.dataset.trail = String(view.trail);
   }
 }

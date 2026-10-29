@@ -32,3 +32,17 @@ test('keyboard movement and attack, manual actions, speed and debug controls', a
  await page.locator('#speed').selectOption('0.25');await expect(page.locator('#speed')).toHaveValue('0.25');await page.locator('#debug').uncheck();await expect(page.locator('#debug')).not.toBeChecked();
  await page.getByRole('button',{name:'더미 투입'}).click();await page.getByRole('button',{name:'더미 제거'}).click();await expect(page.locator('#status')).toContainText('HP —');
 });
+test('M2 two loaded poses, game-clock trail, CC/reset cleanup and mirrored attacks',async({page})=>{
+ const problems:string[]=[];page.on('pageerror',e=>problems.push(e.message));page.on('response',r=>{if(r.status()>=400)problems.push(r.url());});
+ await page.goto('/?scene=character-lab');const canvas=page.locator('canvas');await expect(canvas).toHaveAttribute('data-pose','idle');
+ await page.getByRole('button',{name:'일시정지',exact:true}).click();await page.locator('[data-action="slash"]').click();await expect(canvas).toHaveAttribute('data-phase','anticipation');
+ await page.locator('#step').click();await page.locator('#step').click();await expect(canvas).toHaveAttribute('data-pose','attack');await expect(canvas).toHaveAttribute('data-trail','true');
+ await page.screenshot({path:`test-results/m2-impact-${test.info().project.name}.png`,fullPage:true});
+ await page.waitForTimeout(150);await expect(canvas).toHaveAttribute('data-pose','attack');
+ await page.locator('[data-action="stagger"]').click();await expect(canvas).toHaveAttribute('data-trail','false');await expect(canvas).toHaveAttribute('data-visual-offset','0');
+ await page.locator('#reset').click();await expect(canvas).toHaveAttribute('data-rotation','0');
+ await page.keyboard.down('a');await page.waitForTimeout(100);await page.keyboard.up('a');await page.locator('#pause').click();await page.locator('[data-action="slash"]').click();await page.locator('#step').click();await page.locator('#step').click();
+ await expect(canvas).toHaveAttribute('data-facing','-1');await expect(canvas).toHaveAttribute('data-visual-offset','-10');
+ await page.screenshot({path:`test-results/m2-impact-left-${test.info().project.name}.png`,fullPage:true});
+ await page.locator('#reset').click();await expect(canvas).toHaveAttribute('data-pose','idle');expect(problems).toEqual([]);
+});
