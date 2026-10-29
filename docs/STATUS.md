@@ -4,7 +4,7 @@
 
 ## 현재 마일스톤
 
-**M1 로컬 및 원격 CI 검증 완료, PR #1 main 병합 완료. Pages 활성화 설정 대기.** M1 전체 완료와 M2 시각 승인은 아직 아니다.
+**M1 로컬·원격 CI 검증과 Pages 배포 성공. 배포 후 사용자 접속·조작 확인 대기.** 정식 아트/M2와 실제 휴대폰 검수는 별도다.
 
 ## 완료된 기능
 
@@ -41,7 +41,7 @@
 
 ## 실행·확인 방법
 
-저장소 루트에서 `npm ci` → `npm run dev` 후 개발 서버의 `/?scene=character-lab`에 접속한다. `npm run build` → `npm run preview`로 빌드 결과 확인 가능. Pages가 아직 활성화되지 않아 확인된 공개 배포 주소는 없다.
+저장소 루트에서 `npm ci` → `npm run dev` 후 개발 서버의 `/?scene=character-lab`에 접속한다. `npm run build` → `npm run preview`로 빌드 결과 확인 가능. 배포 성공 주소: https://ckengus.github.io/little_caravan/?scene=character-lab . 배포 후 실제 렌더링·조작은 사용자 확인 대기.
 
 더미 투입→자동 접근·공격 체크→HP 감소 확인. 일시정지 후 한 프레임 진행으로 상태·타격 시점 확인. 전체 초기화 후 걷기 버튼을 누르고 떼거나 버튼 밖으로 이동해 정지 확인. 경직/넉백은 공격을 중단한다. UI와 도형은 검사 도구이며 정식 게임이 아니다.
 
@@ -70,3 +70,12 @@
 ## 2026-10-29 원격 인계 기록
 
 GitHub 연결 도구로 CI 조회·PR 생성·병합과 배포 로그 확인을 수행했다. Pages 설정 변경 전이므로 테스트 URL을 확정해 제공하지 않았다. 현재 연결 도구에는 Pages 설정 변경 기능이 없어 사용자 계정에서 한 차례 설정이 필요하다.
+
+## 2026-10-29 Pages 활성화 후 확인
+
+- [Deploy Pages 실행 40876318386](https://github.com/ckengus/little_caravan/actions/runs/40876318386): build/deploy 모두 success.
+- 배포된 앱 커밋: d2a4ae27959b2ef4e532015547339882e6223aa1. 동일 커밋 Validate 실행 40873135547도 success.
+- 배포 로그의 실제 환경 주소: https://ckengus.github.io/little_caravan/ .
+- [캐릭터 테스트 필드 열기](https://ckengus.github.io/little_caravan/?scene=character-lab)
+- 이전 Pages 설정 404 차단은 해소됐다. 확인 도구에서 공개 페이지 본문을 열지 못해 배포 후 실제 렌더링·조작은 아직 검증하지 않았다. 사용자 브라우저에서 접속·더미 투입·자동 공격·일시정지·초기화를 확인한다.
+- 정식 아트와 실제 휴대폰 검수는 별도이며 아직 완료가 아니다.

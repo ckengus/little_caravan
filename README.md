@@ -16,7 +16,7 @@
 
 ## 현재 상태와 첫 개발 목표
 
-- M1 웹 테스트 필드와 CI/Pages 워크플로를 구현했다. 로컬 기능 검증 결과는 STATUS를 참고한다. 원격 배포는 아직 실행하지 않았다.
+- M1 웹 테스트 필드·원격 CI·Pages 배포가 성공했다. [테스트 필드](https://ckengus.github.io/little_caravan/?scene=character-lab)에서 사용자 접속·조작 검수 대기.
 - 첫 목표는 **웹 캐릭터 동작 테스트 필드**다. 정식 게임 UI나 APK부터 만들지 않는다.
 - 선택된 외형: [아트 설명](assets/art/references/README.md) / [일행 PNG](assets/art/references/little-caravan-party-v1.png).
 - 이 PNG는 외형 참고자료이며 완성된 애니메이션 시트나 분리 부품이 아니다.
@@ -48,3 +48,12 @@ CI는 설치→타입 검사→단위 테스트→빌드→브라우저 테스�
 
 저장소 [Settings → Pages](https://github.com/ckengus/little_caravan/settings/pages)에서 Build and deployment → Source를 **GitHub Actions**로 설정한다. 이후 Actions → Deploy Pages → Run workflow(main) 또는 실패 실행 재시도. 배포 성공과 실제 접속 확인 전까지 공개 테스트 URL은 미확정이다.
 
+
+## 2026-10-29 Pages 활성화 후 확인
+
+- [Deploy Pages 실행 40876318386](https://github.com/ckengus/little_caravan/actions/runs/40876318386): build/deploy 모두 success.
+- 배포된 앱 커밋: d2a4ae27959b2ef4e532015547339882e6223aa1. 동일 커밋 Validate 실행 40873135547도 success.
+- 배포 로그의 실제 환경 주소: https://ckengus.github.io/little_caravan/ .
+- [캐릭터 테스트 필드 열기](https://ckengus.github.io/little_caravan/?scene=character-lab)
+- 이전 Pages 설정 404 차단은 해소됐다. 확인 도구에서 공개 페이지 본문을 열지 못해 배포 후 실제 렌더링·조작은 아직 검증하지 않았다. 사용자 브라우저에서 접속·더미 투입·자동 공격·일시정지·초기화를 확인한다.
+- 정식 아트와 실제 휴대폰 검수는 별도이며 아직 완료가 아니다.
