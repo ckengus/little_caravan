@@ -32,7 +32,7 @@
 | 브라우저 기능 | 로딩, 자동 접근·타격, 정지/프레임 진행, 초기화, 걷기 취소 5종, 키보드, 수동 버튼, 배속 선택, 디버그 토글, 더미 제거 확인 |
 | 레이아웃 | 1280×720 PC와 Pixel 7 세로 에뮬레이션에서 가로 overflow 없음. 모바일 스크린샷 직접 확인 |
 | 모바일 실기기·가로 회전·앱 복귀·성능 | 미검증 |
-| 원격 GitHub CI / Pages 배포 / 공개 URL | 미실행·미확인 |
+| 원격 GitHub CI / Pages 배포 / 공개 URL | 기능 브랜치 push 완료. API 네트워크 차단으로 실행 결과 조회·배포 미확인 |
 | APK | 미착수 |
 
 단위 테스트는 공격당 1회 피해, 거리/방향/정확한 사거리 경계, CC 타격 취소·경직 갱신, 공격 입력 거부·방향 잠금, 정지/배속/프레임 진행 시간, 자동 접근, 넉백 이후 위치 유지·추가 넉다운 무시, 필드 경계·reset을 검증한다. 부동소수점 프레임 경계에서 진행이 정체되는 문제를 수정하고 재검증했다.
@@ -47,7 +47,9 @@
 
 ## 진행·차단·한계
 
-- 현재 변경은 로컬 작업 디렉터리에 있으며 push/원격 CI/배포는 수행하지 않았다. Pages에는 Settings → Pages → Source: GitHub Actions가 필요하다. 계정 권한과 설정은 아직 확인하지 않아 권한 오류가 있다고 단정하지 않는다.
+- 구현 커밋 `96e84c4`를 `feat/m1-character-lab` 브랜치로 GitHub에 push했다. main은 변경하지 않았다. PR 생성·원격 CI 조회·Pages 설정 API는 `api.github.com` CONNECT 요청이 네트워크 정책 403으로 차단되어 수행하지 못했다. 계정 권한 부족이나 CI 실패로 단정하지 않는다.
+- PR 생성: https://github.com/ckengus/little_caravan/pull/new/feat/m1-character-lab (base: main). PR 검사 통과 후 merge하고 Settings → Pages → Source: GitHub Actions를 설정한다. Actions의 Deploy Pages 성공 후 표시되는 실제 주소를 확인해야 한다.
+- 이 환경에서 자동 처리를 재개하려면 환경 네트워크 허용 목록에 `api.github.com`을 추가하고 변경을 적용해야 한다. 적용 후 기존 주입 인증으로 API를 다시 확인한다. 토큰이 필요하다고 아직 판단하지 않는다.
 - 전체 M1 완료는 원격 CI·배포·접속 확인 후 판단한다.
 - Phaser 청크 약 1.21 MB / gzip 332 kB 크기 경고. 모바일 실기기 성능과 로딩 품질은 미검증.
 - 효과음 리소스와 재생 UI는 미구현, 오디오 비활성화.
