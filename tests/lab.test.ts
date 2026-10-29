@@ -1,0 +1,14 @@
+import { describe, it, expect } from 'vitest';
+import { Lab } from '../src/domain/lab';
+function target() { const m = new Lab(); m.spawn(); m.dummy!.x = m.x + 80; return m; }
+describe('character lab game clock and combat', () => {
+ it('applies one damage event per attack even across a large delta', () => { const m=target(); m.act('slash'); m.advance(.59); expect(m.hits).toBe(1);expect(m.dummy!.hp).toBe(90);m.advance(.2);expect(m.hits).toBe(1);expect(m.state).toBe('idle'); });
+ it('cancels pending hit on CC and refreshes stagger', () => { const m=target(); m.act('slash');m.advance(.1);m.act('stagger');m.advance(.2);m.act('stagger');m.advance(.2);expect(m.state).toBe('stagger');expect(m.hits).toBe(0);m.advance(.11);expect(m.state).toBe('idle'); });
+ it('rejects normal attack input and locks direction during attack', () => { const m=target();m.act('slash');m.walk(-1);m.act('thrust');m.advance(.2);expect(m.state).toBe('slash');expect(m.facing).toBe(1);expect(m.hits).toBe(1); });
+ it('pauses game time, steps to next frame boundary and resumes at selected speed', () => { const m=target();m.act('slash');m.advance(.15);m.paused=true;m.tick(1);expect(m.time).toBeCloseTo(.15);m.step();expect(m.time).toBeCloseTo(.2);expect(m.frame).toBe(2);expect(m.hits).toBe(1);m.step();expect(m.hits).toBe(1);m.paused=false;m.speed=.25;m.tick(.1);expect(m.time).toBeCloseTo(.325); });
+ it('steps all movement and dummy reaction time together',()=>{ const m=target();m.walk(1);m.advance(.04);m.paused=true;const x=m.x;m.step();expect(m.time).toBeCloseTo(.1);expect(m.x-x).toBeCloseTo(9); });
+ it('approaches target, stops in range and attacks automatically', () => { const m=new Lab();m.spawn();m.auto=true;for(let i=0;i<80;i++)m.tick(.1);expect(m.hits).toBeGreaterThan(0);expect(m.dummy!.hp).toBeLessThan(100);expect(Math.abs(m.x-m.dummy!.x)).toBeLessThanOrEqual(113); });
+ it('checks range and facing; can attack at exact range boundary', () => { const m=target();m.dummy!.x=m.x+106;m.act('thrust');m.advance(.3);expect(m.hits).toBe(0);m.advance(.3);m.dummy!.x=m.x-80;m.act('slash');m.advance(.6);expect(m.hits).toBe(0);m.dummy!.x=m.x+105;m.act('slash');m.advance(.3);expect(m.hits).toBe(1); });
+ it('keeps knockback destination through fallen/getUp and ignores extra knockdown',()=>{const m=target();m.act('knockback');m.advance(.2);m.act('knockback');m.advance(.11);expect(m.state).toBe('fallen');const x=m.x;m.advance(.81);expect(m.state).toBe('idle');expect(m.x).toBeCloseTo(x);expect(m.x).toBeLessThan(240);});
+ it('clamps field boundaries and resets all combat and playback state',()=>{const m=target();m.walk(-1);m.advance(5);expect(m.x).toBe(48);m.paused=true;m.auto=true;m.reset();expect(m.x).toBe(240);expect(m.dummy).toBeNull();expect(m.paused).toBe(false);expect(m.auto).toBe(false);expect(m.hits).toBe(0);});
+});
